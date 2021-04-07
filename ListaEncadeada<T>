@@ -1,0 +1,228 @@
+package Lista; 
+
+public class ListaEncadeada<T> implements Lista<T> {
+	private NoLista<T> primeiro;
+	private NoLista<T> ultimo;
+	private int qtdeElementos;
+
+	public NoLista<T> getPrimeiro() {
+		return primeiro;
+	}
+
+	public void setPrimeiro(NoLista<T> primeiro) {
+		this.primeiro = primeiro;
+	}
+
+	@Override
+	public void inserir(T valor) {
+		NoLista<T> novo = (NoLista<T>)new NoLista<T>();
+		novo.setInfo(valor);
+		setQtdeElementos(getTamanho() + 1);
+		// para inserção no final (a lista fica de acordo com a ordem de inserção)
+		if (this.estaVazia()) {
+			primeiro = novo;
+		} else {
+			//ultimo.setProximo(novo);
+			novo.setProximo(this.primeiro);
+		}
+		this.primeiro = novo;
+		//ultimo = novo;
+		/*
+		 * para inserção no início (a lista fica ao contrário)
+		 * novo.setProximo(this.primeiro); this.primeiro = novo;
+		 */
+	}
+
+	public String toString() {
+		String toString = "[";
+		NoLista<T> p = this.primeiro;
+		while (p != null) {
+			toString += p.getInfo() + ", ";
+			p = p.getProximo();
+		}
+		toString += "]";
+		return toString;
+	}
+
+	@Override
+	public int buscar(T valor) {
+		NoLista<T> p = this.primeiro;
+		int posicao = 0;
+		while (p != null) {
+			if (p.getInfo() == valor) {
+				return posicao;
+			}
+			posicao++;
+			p = p.getProximo();
+		}
+		return -1;
+	}
+
+	@Override
+	public void retirar(T valor) {
+		NoLista<T> anterior = null;
+		NoLista<T> p = this.primeiro;
+
+		while (p != null && p.getInfo() != valor) {
+			anterior = p;
+			p = p.getProximo();
+		}
+		if (p != null) {
+			if (anterior == null) {
+				this.primeiro = p.getProximo();
+			} else
+				anterior.setProximo(p.getProximo());
+			this.qtdeElementos--;
+		}
+
+	}
+
+	@Override
+	public boolean estaVazia() {
+		return (primeiro == null); // (ultimo == null) ou (qtdeElementos == 0)
+	}
+
+	@Override
+	public Lista<T> copiar() {
+		ListaEncadeada<T> nova = (ListaEncadeada<T>)new ListaEncadeada<T>();
+		NoLista<T> p = this.primeiro;
+		while (p != null) {
+			nova.inserir(p.getInfo());
+			p = p.getProximo();
+		}
+		return nova;
+	}
+
+	@Override
+	public void concatenar(Lista<T> outra) {
+
+		for (int i = 0; i < outra.getTamanho(); i++) {
+			this.inserir(outra.pegar(i));
+			}
+
+	}
+
+	@Override
+	public Lista<T> dividir() {
+		ListaEncadeada<T> nova = (ListaEncadeada<T>)new ListaEncadeada<T>();
+		NoLista<T> p = this.primeiro;
+		int contador = 0;
+		while (p != null) {
+			nova.inserir(p.getInfo());
+			p = p.getProximo();
+		}
+		NoLista<T> x = this.primeiro;
+		while (contador < this.qtdeElementos / 2) {
+			nova.retirar(x.getInfo());
+			contador++;
+			x = x.getProximo();
+		}
+		return nova;
+		// 50/98/-15/50
+		// -15/50
+	}
+
+	@Override
+	public T pegar(int posicao) {
+		if (posicao >= this.qtdeElementos) {// Posicao invalida
+			throw new ArrayIndexOutOfBoundsException("Posição inválida: " + posicao);
+		}
+		NoLista<T> p = this.primeiro;
+		int contador = 0;
+		while (p != null) {
+			if (contador == posicao) {
+				return p.getInfo();
+			}
+			posicao++;
+			p = p.getProximo();
+		}
+		return null;
+	}
+
+	@Override
+	public void exibir() {
+		NoLista<T> p = (NoLista<T>)new NoLista<T>();
+		p = this.primeiro;
+		System.out.print("[");
+		while (p != null) {
+			System.out.print(p.getInfo() + ",");
+			p = p.getProximo();
+		}
+		System.out.print("]");
+
+	}
+	
+	//questão01 Prova Retornar o ultimo indice de T que aparece na Lista
+	public int ultimoIndiceDe(T valor) {
+		int indice = -1;
+		for (int i = 0; i < this.getTamanho(); i++) {
+			if (this.pegar(i).equals(valor)) {
+				indice = i;
+			}
+		}
+		return indice;
+	}
+	
+	//questão02 Prova
+	//Verifica qual a menor Lista entre duas, para utilização no método "intercala"
+	private ListaEncadeada<T> verificarMenorLista(ListaEncadeada<T> outra) {
+		if (this.getTamanho() >= outra.getTamanho()) {
+			return outra;
+		}else {
+			return this;	
+		}
+	}
+	
+	//Verifica o tamanho de duas listas e retorna de forma numerica, para utilização no método "intercala"
+	private int verificarTamanho(ListaEncadeada<T> outra) {
+		if (this.getTamanho() == outra.getTamanho()) {
+			return 0;
+		}
+		else if (this.getTamanho() > outra.getTamanho()) {
+			return 1;
+		}
+		return -1;
+	}
+	
+	/*intercala duas listas 
+	 * Ex: Lista 1{1 2 3} Lista 2{4 5 6}
+	 * Retorno: Lista3{1 4 2 5 3 6}
+	 */
+	public ListaEncadeada<T> intercala(ListaEncadeada<T> outra){
+		ListaEncadeada<T> intercalada = new ListaEncadeada<T>();
+		ListaEncadeada<T> listaMenor = this.verificarMenorLista(outra);
+		int indice = 0;
+		
+		for (int i = 0; i < listaMenor.getTamanho(); i++) {
+			intercalada.inserir(this.pegar(i));
+			intercalada.inserir(outra.pegar(i));
+			indice = i;
+		}
+		
+		//Caso sobrar elementos em uma das listas aqui ele verifica e adiciona os restantes
+		int verificacao = verificarTamanho(outra);
+		if (verificacao != 0) {
+			if (verificacao == 1) {
+				for (int i = indice+1; i < this.getTamanho(); i++) {
+					intercalada.inserir(this.pegar(i));
+				}
+			}else {
+				for (int i = indice+1; i < outra.getTamanho(); i++) {
+					intercalada.inserir(outra.pegar(i));
+				}
+			}
+		}
+		
+		return intercalada;
+	}
+
+	public void setQtdeElementos(int qtdeElementos) {
+		this.qtdeElementos = qtdeElementos;
+	}
+
+	@Override
+	public int getTamanho() {
+		return qtdeElementos;
+	}
+
+}
